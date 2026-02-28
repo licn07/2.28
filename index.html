@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>简易裁剪 450x700</title>
+<style>
+  body{margin:0;background:#1a1a1a;color:#fff;font-family:Arial}
+  .container{max-width:500px;margin:20px auto;padding:0 10px}
+  .upload{text-align:center;padding:30px;border:2px dashed #666;border-radius:8px;cursor:pointer}
+  #preview{display:block;margin:20px auto;max-width:100%;border:1px solid #444}
+  .btns{text-align:center;margin:20px 0}
+  button{padding:10px 20px;margin:0 5px;border:none;border-radius:6px;background:#007aff;color:#fff;font-size:16px;cursor:pointer}
+  #crop{background:#ff3b30}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="upload" id="upload">点击上传图片</div>
+  <input type="file" id="file" accept="image/*" style="display:none">
+  <img id="preview">
+  <div class="btns">
+    <button id="crop">裁剪</button>
+    <button id="download" style="display:none">下载</button>
+  </div>
+</div>
+
+<script>
+const file = document.getElementById('file')
+const upload = document.getElementById('upload')
+const preview = document.getElementById('preview')
+const cropBtn = document.getElementById('crop')
+const downloadBtn = document.getElementById('download')
+
+const W = 450
+const H = 700
+let img = new Image()
+let canvas = document.createElement('canvas')
+let ctx = canvas.getContext('2d')
+
+upload.onclick = () => file.click()
+file.onchange = e => {
+  const f = e.target.files[0]
+  if(!f) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    img.src = ev.target.result
+    img.onload = () => {
+      preview.src = img.src
+      downloadBtn.style.display = 'none'
+    }
+  }
+  reader.readAsDataURL(f)
+}
+
+cropBtn.onclick = () => {
+  if(!img.src) return alert('先上传图片')
+  canvas.width = W
+  canvas.height = H
+  const scale = Math.max(W/img.width, H/img.height)
+  const x = (img.width*scale - W)/2
+  const y = (img.height*scale - H)/2
+  ctx.drawImage(img, -x, -y, img.width*scale, img.height*scale)
+  preview.src = canvas.toDataURL('image/png')
+  downloadBtn.style.display = 'inline'
+}
+
+downloadBtn.onclick = () => {
+  const a = document.createElement('a')
+  a.download = 'crop_450x700.png'
+  a.href = canvas.toDataURL('image/png')
+  a.click()
+}
+</script>
+</body>
+</html>
